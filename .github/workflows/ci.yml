@@ -27,7 +27,7 @@ jobs:
       env:
         MLFLOW_TRACKING_URI: https://dagshub.com/pyogaaa/Eksperimen_SML.mlflow
         MLFLOW_TRACKING_USERNAME: pyogaaa
-        MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+        MLFLOW_TRACKING_PASSWORD: MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
         GITHUB_ACTIONS: true
       run: |
         # Menggunakan ./ memastikan MLflow membacanya sebagai folder lokal
