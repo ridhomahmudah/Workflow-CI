@@ -21,16 +21,16 @@ jobs:
         pip install mlflow dagshub pandas scikit-learn PySastrawi joblib
 
     - name: Check Directory Structure
-      run: ls -R  # Ini akan membantu kita melihat posisi file di log
+      run: ls -R  # Membantu pelacakan letak file dataset dan MLProject
 
-    - name: MLflow Run (Retraining)
+    - name: MLflow Run
       env:
-        MLFLOW_TRACKING_URI: https://dagshub.com/pyogaaa/Eksperimen_SML.mlflow
+        # SOLUSI ERROR 403: Menyisipkan kredensial langsung ke URL pelacakan agar tembus ke sub-proses
+        MLFLOW_TRACKING_URI: https://pyogaaa:${{ secrets.DAGSHUB_TOKEN }}@dagshub.com/pyogaaa/Eksperimen_SML.mlflow
         MLFLOW_TRACKING_USERNAME: pyogaaa
         MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
         GITHUB_ACTIONS: true
       run: |
-        # Menggunakan ./ memastikan MLflow membacanya sebagai folder lokal
         mlflow run ./MLProject_folder --experiment-name "Eksperimen_Mobile_Legends_Sentiment" --env-manager local
 
     - name: Wait for Registry
@@ -44,16 +44,17 @@ jobs:
 
     - name: Build Docker Image via MLflow
       env:
-        MLFLOW_TRACKING_URI: https://dagshub.com/pyogaaa/Eksperimen_SML.mlflow
+        # Tetap sisipkan kredensial penuh untuk proses pembacaan Model Registry di DagsHub
+        MLFLOW_TRACKING_URI: https://pyogaaa:${{ secrets.DAGSHUB_TOKEN }}@dagshub.com/pyogaaa/Eksperimen_SML.mlflow
         MLFLOW_TRACKING_USERNAME: pyogaaa
         MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
       run: |
-        # Pastikan model registry sudah terbaca di DagsHub
+        # PERBAIKAN: Jalur model disesuaikan dengan 'registered_model_name' yang ada di modelling.py
         mlflow models build-docker \
-          -m "models:/Mobile_Legends_Sentiment/latest" \
-          -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" \
-          --install-mlflow
+          -m "models:/Mobile_Legends_SVM_Model/latest" \
+          -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-svm:latest" \
+          ---install-mlflow
 
     - name: Push Docker Image
       run: |
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/mlflow-svm:latest

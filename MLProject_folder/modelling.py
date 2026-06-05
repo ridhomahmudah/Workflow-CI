@@ -18,9 +18,6 @@ def main():
     else:
         # Tetap bisa jalan normal kalau running lokal di komputer
         dagshub.init(repo_owner='pyogaaa', repo_name='Eksperimen_SML', mlflow=True)
-    
-    # Menyesuaikan nama eksperimen agar relevan di dashboard
-    mlflow.set_experiment("Eksperimen_Mobile_Legends_Sentiment")
 
     # 2. AKTIFKAN AUTOLOG SCIKIT-LEARN DENGAN REGISTRASI MODEL
     # log_models=True memastikan folder "model" beserta MLmodel, conda.yaml, dll. diunggah otomatis
@@ -32,14 +29,7 @@ def main():
     os.makedirs(output_dir, exist_ok=True) # Memastikan folder output/modelling ada
 
     data_path = os.path.join(base_dir, 'dataset_mobile_legends_preprocessed.csv')
-    
-    # Fallback check struktur folder kriteria 2
-    if not os.path.exists(data_path):
-        data_path = os.path.join('Membangun_model', 'namadataset_preprocessing', 'dataset_mobile_legends_preprocessed.csv')
 
-    if not os.path.exists(data_path):
-        print(f"[!] File {data_path} tidak ditemukan!")
-        return
 
     print(f"[*] Memuat data hasil preprocessing dari: {data_path}")
     df = pd.read_csv(data_path)
