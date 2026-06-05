@@ -27,11 +27,11 @@ jobs:
       env:
         MLFLOW_TRACKING_URI: https://dagshub.com/pyogaaa/Eksperimen_SML.mlflow
         MLFLOW_TRACKING_USERNAME: pyogaaa
-        MLFLOW_TRACKING_PASSWORD: MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+        MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
         GITHUB_ACTIONS: true
       run: |
         # Menggunakan ./ memastikan MLflow membacanya sebagai folder lokal
-        mlflow run ./MLProject_folder --experiment-name "Retraining_CI" --env-manager local
+        mlflow run ./MLProject_folder --experiment-name "Eksperimen_Mobile_Legends_Sentiment" --env-manager local
 
     - name: Wait for Registry
       run: sleep 60
