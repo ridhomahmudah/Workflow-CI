@@ -53,7 +53,7 @@ jobs:
         mlflow models build-docker \
           -m "models:/Mobile_Legends_SVM_Model/latest" \
           -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-svm:latest" \
-          ---install-mlflow
+          --install-mlflow
 
     - name: Push Docker Image
       run: |
