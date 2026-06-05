@@ -1,0 +1,6 @@
+name: Mobile_Legends_Sentiment
+base_docker_image: python:3.12
+
+entry_points:
+  main:
+    command: "python modelling.py"
