@@ -18,21 +18,19 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        pip install mlflow "dagshub>=0.40.0" pandas scikit-learn PySastrawi joblib
+        pip install mlflow dagshub pandas scikit-learn PySastrawi joblib
 
     - name: Check Directory Structure
-      run: ls -R  # Membantu pelacakan letak file dataset dan MLProject
+      run: ls -R
 
-    - name: MLflow Run
+    - name: MLflow Run (Retraining)
       env:
-        # URI sudah benar mengarah ke repositori lengkap
-        MLFLOW_TRACKING_URI: https://dagshub.com/ridhomahmudah/Eksperimen_Ridho-nur-mahmudah.mlflow
+        MLFLOW_TRACKING_URI: https://dagshub.com/ridhomahmudah/Eksperimen_SML_Ridho-nur-mahmudah.mlflow
         MLFLOW_TRACKING_USERNAME: ridhomahmudah
         MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
         GITHUB_ACTIONS: true
       run: |
-        
-        mlflow run ./MLProject_folder --experiment-id 2 --env-manager local
+        mlflow run ./MLProject_folder --experiment-name "Retraining_CI" --env-manager local
 
     - name: Wait for Registry
       run: sleep 60
@@ -45,7 +43,7 @@ jobs:
 
     - name: Build Docker Image via MLflow
       env:
-        MLFLOW_TRACKING_URI: https://dagshub.com/ridhomahmudah/Eksperimen_Ridho-nur-mahmudah.mlflow
+        MLFLOW_TRACKING_URI: https://dagshub.com/ridhomahmudah/Eksperimen_SML_Ridho-nur-mahmudah.mlflow
         MLFLOW_TRACKING_USERNAME: ridhomahmudah
         MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
       run: |

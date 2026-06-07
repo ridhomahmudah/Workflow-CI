@@ -16,6 +16,7 @@ def main():
         # Membaca dari environment variable di file YAML GitHub Actions
         remote_url = os.getenv('MLFLOW_TRACKING_URI')
         mlflow.set_tracking_uri(remote_url)
+        
     else:
         # Tetap bisa jalan normal kalau running lokal di komputer
         print("[*] Menghubungkan ke DagsHub Tracker...")
@@ -87,4 +88,4 @@ def main():
         print(classification_report(y_test, preds))
 
 if __name__ == "__main__":
-        main()
+    main()
