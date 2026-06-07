@@ -18,7 +18,7 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        pip install mlflow dagshub pandas scikit-learn PySastrawi joblib
+        pip install mlflow "dagshub>=0.40.0" pandas scikit-learn PySastrawi joblib
 
     - name: Check Directory Structure
       run: ls -R  # Membantu pelacakan letak file dataset dan MLProject
