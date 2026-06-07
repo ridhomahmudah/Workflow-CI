@@ -1,14 +1,60 @@
-name: model_env
-channels:
-  - defaults
-  - conda-forge
-dependencies:
-  - python=3.12.7
-  - pip
-  - pip:
-      - mlflow
-      - pandas
-      - numpy
-      - scikit-learn
-      - dagshub
-      - PySastrawi
+name: MLflow CI Retraining & Docker Build
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  retrain-and-docker:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install Dependencies
+      run: |
+        pip install mlflow dagshub pandas scikit-learn PySastrawi joblib
+
+    - name: Check Directory Structure
+      run: ls -R  # Membantu pelacakan letak file dataset dan MLProject
+
+    - name: MLflow Run
+      env:
+        # SOLUSI ERROR 403: Menyisipkan kredensial langsung ke URL pelacakan agar tembus ke sub-proses
+        MLFLOW_TRACKING_URI: https://ridhomahmudah:${{ secrets.DAGSHUB_TOKEN }}@dagshub.com/ridhomahmudah/Eksperimen_SML_Ridho-nur-mahmudah.mlflow
+        MLFLOW_TRACKING_USERNAME: ridhomahmudah
+        MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+        GITHUB_ACTIONS: true
+      run: |
+        mlflow run ./MLProject_folder --experiment-name "Eksperimen_Mobile_Legends_Sentiment" --env-manager local
+
+    - name: Wait for Registry
+      run: sleep 60
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build Docker Image via MLflow
+      env:
+        # Tetap sisipkan kredensial penuh untuk proses pembacaan Model Registry di DagsHub
+        MLFLOW_TRACKING_URI: https://ridhomahmudah:${{ secrets.DAGSHUB_TOKEN }}@dagshub.com/ridhomahmudah/Eksperimen_SML_Ridho-nur-mahmudah.mlflow
+        MLFLOW_TRACKING_USERNAME: ridhomahmudah
+        MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+      run: |
+        # PERBAIKAN: Jalur model disesuaikan dengan 'registered_model_name' yang ada di modelling.py
+        mlflow models build-docker \
+          -m "models:/Mobile_Legends_SVM_Model/latest" \
+          -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-svm:latest" \
+          --install-mlflow
+
+    - name: Push Docker Image
+      run: |
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/mlflow-svm:latest
