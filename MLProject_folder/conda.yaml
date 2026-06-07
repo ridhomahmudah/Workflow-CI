@@ -26,7 +26,7 @@ jobs:
     - name: MLflow Run
       env:
         # URI sudah benar mengarah ke repositori lengkap
-        MLFLOW_TRACKING_URI: https://ridhomahmudah:${{ secrets.DAGSHUB_TOKEN }}@dagshub.com/ridhomahmudah/Eksperimen_SML_Ridho-nur-mahmudah.mlflow
+        MLFLOW_TRACKING_URI: https://dagshub.com/Eksperimen_SML_Ridho-nur-mahmudah.mlflow
         MLFLOW_TRACKING_USERNAME: ridhomahmudah
         MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
         GITHUB_ACTIONS: true
@@ -45,7 +45,7 @@ jobs:
 
     - name: Build Docker Image via MLflow
       env:
-        MLFLOW_TRACKING_URI: https://ridhomahmudah:${{ secrets.DAGSHUB_TOKEN }}@dagshub.com/ridhomahmudah/Eksperimen_SML_Ridho-nur-mahmudah.mlflow
+        MLFLOW_TRACKING_URI: https://dagshub.com/Eksperimen_SML_Ridho-nur-mahmudah.mlflow
         MLFLOW_TRACKING_USERNAME: ridhomahmudah
         MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
       run: |
