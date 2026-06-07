@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.pipeline import Pipeline  # <-- TAMBAHKAN INI
 from sklearn.metrics import classification_report, accuracy_score
 import mlflow
 import dagshub
@@ -17,10 +18,11 @@ def main():
         mlflow.set_tracking_uri(remote_url)
     else:
         # Tetap bisa jalan normal kalau running lokal di komputer
-        dagshub.init(repo_owner='pyogaaa', repo_name='Eksperimen_SML', mlflow=True)
+        print("[*] Menghubungkan ke DagsHub Tracker...")
+        dagshub.init(repo_owner='ridhomahmudah', repo_name='Eksperimen_SML_Ridho-nur-mahmudah', mlflow=True)
 
     # 2. AKTIFKAN AUTOLOG SCIKIT-LEARN DENGAN REGISTRASI MODEL
-    # log_models=True memastikan folder "model" beserta MLmodel, conda.yaml, dll. diunggah otomatis
+    # Karena kita pakai Pipeline, Autolog akan merekam seluruh tahapan Pipeline tersebut
     mlflow.sklearn.autolog(log_models=True, registered_model_name="Mobile_Legends_SVM_Model")
 
     # Path dinamis untuk file dan folder output fisik lokal
@@ -29,7 +31,6 @@ def main():
     os.makedirs(output_dir, exist_ok=True) # Memastikan folder output/modelling ada
 
     data_path = os.path.join(base_dir, 'dataset_mobile_legends_preprocessed.csv')
-
 
     print(f"[*] Memuat data hasil preprocessing dari: {data_path}")
     df = pd.read_csv(data_path)
@@ -42,49 +43,47 @@ def main():
     y = df['sentiment_label'].values
 
     # Split data train dan test dengan stratifikasi data timpang
+    # KITA TETAP GUNAKAN DATA TEKS MENTAH (_raw) KARENA VEKTORISASI DIKUNCI DI DALAM PIPELINE
     X_train_raw, X_test_raw, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
-    # Vektorisasi Teks (TF-IDF) murni
-    print("[*] Mengekstrak fitur teks menggunakan TF-IDF...")
-    tfidf = TfidfVectorizer(max_features=2000)
-    X_train = tfidf.fit_transform(X_train_raw).toarray()
-    X_test = tfidf.transform(X_test_raw).toarray()
-
-    # 3. Training Model dalam MLflow Run Block
-    with mlflow.start_run(run_name="SVM_Pure_Text_Sentiment"):
-        print("[*] Memulai Training Support Vector Classifier (SVM)...")
+    # 3. Training Model dalam MLflow Run Block Menggunakan Pipeline
+    with mlflow.start_run(run_name="SVM_Pipeline_Text_Sentiment"):
+        print("[*] Membuat Bundling Pipeline (TF-IDF + SVM)...")
         
-        # Konfigurasi model SVM dengan penyeimbang bobot kelas otomatis
-        model = SVC(
-            kernel='rbf',
-            C=1.0,
-            class_weight='balanced', 
-            random_state=42
-        )
+        # Satukan TF-IDF dan SVM ke dalam satu kesatuan alur kerja
+        sentiment_pipeline = Pipeline([
+            ('tfidf', TfidfVectorizer(max_features=2000)),
+            ('svm', SVC(
+                kernel='rbf',
+                C=1.0,
+                class_weight='balanced', 
+                random_state=42
+            ))
+        ])
         
-        # Proses training model (Otomatis direkam oleh mlflow)
-        model.fit(X_train, y_train)
+        print("[*] Memulai Training Pipeline langsung dari teks mentah...")
+        # .fit() di pipeline otomatis menjalankan fit_transform TF-IDF lalu ditraining ke SVM
+        sentiment_pipeline.fit(X_train_raw, y_train)
 
-        # Prediksi hasil evaluasi
-        preds = model.predict(X_test)
+        # Prediksi hasil evaluasi menggunakan data teks mentah langsung
+        preds = sentiment_pipeline.predict(X_test_raw)
         acc = accuracy_score(y_test, preds)
         
         # --- PENYIMPANAN FISIK DI SUB-FOLDER OUTPUT LOKAL ---
+        # Sekarang cukup simpan SATU file tunggal bernama model_base.pkl
         model_save_path = os.path.join(output_dir, 'model_base.pkl')
-        tfidf_save_path = os.path.join(output_dir, 'tfidf_vectorizer.pkl')
         
-        joblib.dump(model, model_save_path)
-        joblib.dump(tfidf, tfidf_save_path)
+        # Menyimpan objek pipeline utuh (TF-IDF + SVM ada di dalam sini)
+        joblib.dump(sentiment_pipeline, model_save_path)
 
-        # Mengunggah pkl tambahan ke root artifact MLflow DagsHub
+        # Mengunggah pkl terintegrasi ke root artifact MLflow DagsHub
         mlflow.log_artifact(model_save_path)
-        mlflow.log_artifact(tfidf_save_path)
 
-        print("\n--- BASE MODEL LOGGED TO LOCAL & DAGSHUB VIA AUTOLOG ---")
+        print("\n--- PIPELINE MODEL LOGGED TO LOCAL & DAGSHUB VIA AUTOLOG ---")
         print(f"Accuracy: {acc*100:.2f}%")
-        print(f"File output tersimpan di: {output_dir}\n")
+        print(f"File model tunggal (TF-IDF + SVM) tersimpan di: {model_save_path}\n")
         print(classification_report(y_test, preds))
 
 if __name__ == "__main__":
