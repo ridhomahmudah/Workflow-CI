@@ -32,7 +32,7 @@ jobs:
         GITHUB_ACTIONS: true
       run: |
         
-        mlflow run ./MLProject_folder --experiment-id 1 --env-manager local
+        mlflow run ./MLProject_folder --experiment-id 2 --env-manager local
 
     - name: Wait for Registry
       run: sleep 60
