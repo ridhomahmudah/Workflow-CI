@@ -29,11 +29,10 @@ jobs:
         MLFLOW_TRACKING_URI: https://dagshub.com/ridhomahmudah/Eksperimen_Ridho-nur-mahmudah.mlflow
         MLFLOW_TRACKING_USERNAME: ridhomahmudah
         MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
-        MLFLOW_EXPERIMENT_NAME: "Eksperimen_Mobile_Legends_Sentiment"
         GITHUB_ACTIONS: true
       run: |
         
-        mlflow run ./MLProject_folder --env-manager local
+        mlflow run ./MLProject_folder --experiment-name "Eksperimen_Mobile_Legends_Sentiment" --env-manager local
 
     - name: Wait for Registry
       run: sleep 60
