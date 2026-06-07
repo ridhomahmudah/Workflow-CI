@@ -29,6 +29,7 @@ jobs:
         MLFLOW_TRACKING_URI: https://ridhomahmudah:${{ secrets.DAGSHUB_TOKEN }}@dagshub.com/ridhomahmudah/Eksperimen_SML_Ridho-nur-mahmudah.mlflow
         MLFLOW_TRACKING_USERNAME: ridhomahmudah
         MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+        MLFLOW_EXPERIMENT_NAME: "Eksperimen_Mobile_Legends_Sentiment"
         GITHUB_ACTIONS: true
       run: |
         

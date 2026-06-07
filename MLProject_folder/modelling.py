@@ -11,13 +11,11 @@ import dagshub
 import joblib
 
 def main():
-    EXPERIMENT_NAME = "Eksperimen_Mobile_Legends_Sentiment"
     # 1. INTEGRASI DAGSHUB & MLFLOW (Mendukung CI/CD GitHub Actions & Lokal)
     if os.getenv('GITHUB_ACTIONS'):
         # Membaca dari environment variable di file YAML GitHub Actions
         remote_url = os.getenv('MLFLOW_TRACKING_URI')
         mlflow.set_tracking_uri(remote_url)
-        mlflow.set_experiment(EXPERIMENT_NAME)
     else:
         # Tetap bisa jalan normal kalau running lokal di komputer
         print("[*] Menghubungkan ke DagsHub Tracker...")
@@ -89,4 +87,4 @@ def main():
         print(classification_report(y_test, preds))
 
 if __name__ == "__main__":
-    main()
+        main()
